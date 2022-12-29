@@ -15,22 +15,25 @@ class GraphConvolution(Module):
         super(GraphConvolution, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = Parameter(torch.FloatTensor(in_features, out_features))
+        self.weight = Parameter(torch.FloatTensor(in_features, out_features))   # input_features, out_features组成的矩阵
         if bias:
-            self.bias = Parameter(torch.FloatTensor(out_features))
+            self.bias = Parameter(torch.FloatTensor(out_features))  # 向量
         else:
             self.register_parameter('bias', None)
         self.reset_parameters()
 
+        
+
+
     def reset_parameters(self):
         stdv = 1. / math.sqrt(self.weight.size(1))
-        self.weight.data.uniform_(-stdv, stdv)
+        self.weight.data.uniform_(-stdv, stdv)  # 随机化参数
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
         support = torch.mm(input, self.weight)
-        output = torch.spmm(adj, support)
+        output = torch.spmm(adj, support)    # 稀疏矩阵的相乘，和mm一样的效果
         if self.bias is not None:
             return output + self.bias
         else:
@@ -40,3 +43,5 @@ class GraphConvolution(Module):
         return self.__class__.__name__ + ' (' \
                + str(self.in_features) + ' -> ' \
                + str(self.out_features) + ')'
+
+

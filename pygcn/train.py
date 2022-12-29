@@ -33,6 +33,7 @@ parser.add_argument('--dropout', type=float, default=0.5,
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
+# np,cpu,gpu三个随机数种子
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 if args.cuda:
@@ -41,7 +42,7 @@ if args.cuda:
 # Load data
 adj, features, labels, idx_train, idx_val, idx_test = load_data()
 
-# Model and optimizer
+# Model and optimizer   构造GCN，初始化参数。两层GCN
 model = GCN(nfeat=features.shape[1],
             nhid=args.hidden,
             nclass=labels.max().item() + 1,
@@ -49,6 +50,7 @@ model = GCN(nfeat=features.shape[1],
 optimizer = optim.Adam(model.parameters(),
                        lr=args.lr, weight_decay=args.weight_decay)
 
+#是否使用cuda
 if args.cuda:
     model.cuda()
     features = features.cuda()
@@ -62,8 +64,8 @@ if args.cuda:
 def train(epoch):
     t = time.time()
     model.train()
-    optimizer.zero_grad()
-    output = model(features, adj)
+    optimizer.zero_grad()   # GraphConvolution forward
+    output = model(features, adj)   # 运行模型，输入参数 (features, adj)
     loss_train = F.nll_loss(output[idx_train], labels[idx_train])
     acc_train = accuracy(output[idx_train], labels[idx_train])
     loss_train.backward()
@@ -90,6 +92,13 @@ def test():
     output = model(features, adj)
     loss_test = F.nll_loss(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
+
+    print(adj)
+    print(features)
+    print(labels)
+    print(idx_train)
+    print(idx_val)
+
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
           "accuracy= {:.4f}".format(acc_test.item()))
